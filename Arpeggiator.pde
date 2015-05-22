@@ -77,7 +77,7 @@ void draw()
     }
     
     //managing sound
-    Note note = new Note(0, pitch, 255);
+    Note note = new Note(0, map(pitch), 255);
     
     myBus.sendNoteOn(note); // Send a Midi noteOn
     myBus.sendNoteOff(note); // Send a Midi nodeOff
@@ -126,7 +126,7 @@ int[] handData(int userId, int instrument)
   line(convLeftHand.x, convLeftHand.y, convRightHand.x, convRightHand.y);
   
   dats[0] = (int)convRightHand.y;
-  dats[1] = (int)convTorso.z;
+  dats[1] = (int)map(convTorso.z, 700, 1700, 32, 255);
   
   if(convLeftHand.y < height/2 - 100)
     dats[2] = 1;
