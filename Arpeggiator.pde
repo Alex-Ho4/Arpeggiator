@@ -77,7 +77,7 @@ void draw()
     }
     
     //managing sound
-    Note note = new Note(0, map(pitch), 255);
+    Note note = new Note(0, pitch, 255);
     
     myBus.sendNoteOn(note); // Send a Midi noteOn
     myBus.sendNoteOff(note); // Send a Midi nodeOff
