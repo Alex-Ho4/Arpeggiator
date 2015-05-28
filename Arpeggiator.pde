@@ -49,9 +49,8 @@ void setup()
   kinect.enableDepth();
   kinect.enableUser();
   
-  f = loadFont("Algerian-48.vlw");  
+  f = loadFont("AgencyFB-Bold-48.vlw");  
   textFont(f,48);
-  textAlign(CENTER);
   
   myBus = new MidiBus(this, -1, "Microsoft GS Wavetable Synth");
 }
@@ -74,8 +73,6 @@ void draw()
     updatePixels();
   }
   
-  text(notes[basePitch],0+100,0+100);
-  
   //PImage depth = kinect.depthImage();  
   
   int[] users = kinect.getUsers();
@@ -86,41 +83,12 @@ void draw()
     {
       velocity = 255;     
       data = handData(users[0], instrument);
-      basePitch = (int)map(data[0],0, 480, 30, 70);
+      basePitch = (int)map(data[0],0, 480, 36, 59);
       tempo = data[1];
       tri7 = (data[2] == -1) ? false : true;
       chord = data[3];
       instrument = data[4];
     }
-    
-    //managing sound
-    if(tri7)
-    {
-      if(i == 0)
-      {
-        pitch = basePitch;
-      }
-      else
-      {
-        pitch += sevenths[constrain((int)map(chord,0,500,0,7),0,7)][i];
-      }
-      i = (i+1)%sevenths[0].length;
-    }
-    else
-    {
-      if(i == 0)
-      {
-        pitch = basePitch;
-      }
-      else
-      {
-        pitch += triads[constrain((int)map(chord,0,500,0,3),0,3)][i];
-      }
-      i = (i+1)%triads[0].length;
-    }    
-    
-    
-    
     
 //    myBus.sendNoteOn(note); // Send a Midi noteOn
 //    delay(tempo);
@@ -132,6 +100,16 @@ void draw()
       thread("playSound");      
       println(milliClock);
     }
+    
+//    Note note = new Note(0, pitch, velocity);
+//    myBus.sendNoteOn(note); // Send a Midi noteOn
+//    delay(tempo);
+//    myBus.sendNoteOff(note); // Send a Midi nodeOff
+    
+    fill(255);
+    text(notes[basePitch] + " Chord",10,50);
+    text("BPM: " + tempo ,10,100);
+    text(instrument,10,150);
     
     for(int j : data)
     {
@@ -153,18 +131,22 @@ int[] handData(int userId, int instrument)
   PVector leftHand = new PVector();
   PVector rightHand = new PVector();
   PVector torso = new PVector();
-       
+  
   float confidenceL = kinect.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_HAND,leftHand);
   float confidenceR = kinect.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_HAND,rightHand);
   float confidenceTorso = kinect.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_TORSO,torso);
-       
-  PVector convLeftHand = new PVector();
-  kinect.convertRealWorldToProjective(leftHand, convLeftHand);
-       
-  PVector convRightHand = new PVector();
-  kinect.convertRealWorldToProjective(rightHand, convRightHand);
   
+  PVector convLeftHand = new PVector();
+  PVector convRightHand = new PVector();
   PVector convTorso = new PVector();
+//  while(confidenceL < .5 && confidenceR < .5)
+//  {     
+//    confidenceL = kinect.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_LEFT_HAND,leftHand);
+//    confidenceR = kinect.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_RIGHT_HAND,rightHand);
+//    confidenceTorso = kinect.getJointPositionSkeleton(userId,SimpleOpenNI.SKEL_TORSO,torso);
+//  }
+  kinect.convertRealWorldToProjective(leftHand, convLeftHand);   
+  kinect.convertRealWorldToProjective(rightHand, convRightHand);    
   kinect.convertRealWorldToProjective(torso, convTorso);
   
   // make test line
@@ -200,10 +182,34 @@ void delay(int time) {
 
 void playSound()
 {
+  //managing sound
+  if(tri7)
+  {
+    if(i == 0)
+    {
+      pitch = basePitch;
+    }
+    else
+    {
+      pitch += sevenths[constrain((int)map(chord,0,500,0,7),0,7)][i];
+    }
+    i = (i+1)%sevenths[0].length;
+  }
+  else
+  {
+    if(i == 0)
+    {
+      pitch = basePitch;
+    }
+    else
+    {
+      pitch += triads[constrain((int)map(chord,0,500,0,3),0,3)][i];
+    }
+    i = (i+1)%triads[0].length;
+  }
+  
   Note note = new Note(0, pitch, velocity);
   myBus.sendNoteOn(note); // Send a Midi noteOn
-  delay(tempo);
-  myBus.sendNoteOff(note); // Send a Midi nodeOff
 }
 
 String[] genNotes()
