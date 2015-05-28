@@ -1,5 +1,7 @@
 import SimpleOpenNI.*;
-import themidibus.*; 
+import themidibus.*;
+import processing.opengl.*;
+import SimpleOpenNI.*;
 
 SimpleOpenNI kinect;
 MidiBus myBus;
@@ -10,13 +12,10 @@ boolean tri7 = true; //true for sevenths, false for triads
 int chord = 0; //note pattern (triads or sevenths)
 int instrument = 0; //instrument playing
 int[] data; //holds data
-
 String[] notes;
-
 float milliClock = 0;
 
 int velocity = 0;
-
 int pitch = 0;
 int channel = 0;
 //                Major       Minor     Augmented  Diminished
@@ -28,6 +27,10 @@ int i = 0;
 PFont f;
 
 int[] userMap;
+
+hitbox triToggle;
+hitbox insUp;
+hitbox insDown;
 
 void setup()
 {
@@ -50,7 +53,10 @@ void setup()
   kinect.enableUser();
   
   f = loadFont("AgencyFB-Bold-48.vlw");  
-  textFont(f,48);
+  
+  triToggle = new hitbox(100, new PVector(width/2, 0+50, 800), color(0,255,0), "Sevenths");
+  insUp = new hitbox(100, new PVector(width-50, 0+50, 800), color(255,0,0), "Instrument\nUp");
+  insDown = new hitbox(100, new PVector(width-50, 0+150, 800), color(0,0,255), "Instrument\nDown");
   
   myBus = new MidiBus(this, -1, "Microsoft GS Wavetable Synth");
 }
@@ -72,6 +78,26 @@ void draw()
     }
     updatePixels();
   }
+  
+  PVector[] depthPoints = kinect.depthMapRealWorld();
+  
+  for(int i =0;i<depthPoints.length;i+=33)
+  {
+    PVector currPoint = depthPoints[i];
+    triToggle.update(currPoint);
+    insUp.update(currPoint);
+    insDown.update(currPoint);         
+  }
+  
+  if(tri7)
+    triToggle.setText("Sevenths");
+  else
+    triToggle.setText("Triads");
+  
+  if(triToggle.display())
+    tri7 = !tri7;
+  insUp.display();
+  insDown.display();  
   
   //PImage depth = kinect.depthImage();  
   
@@ -106,8 +132,12 @@ void draw()
 //    delay(tempo);
 //    myBus.sendNoteOff(note); // Send a Midi nodeOff
     
+    textFont(f,48);
     fill(255);
-    text(notes[basePitch] + " Chord",10,50);
+    if(tri7)
+      text(genChord(tri7) + " Seventh on " + notes[basePitch],10,50);
+    else
+      text(notes[basePitch] + " " + genChord(tri7),10,50);
     text("BPM: " + tempo ,10,100);
     text(instrument,10,150);
     
@@ -231,4 +261,15 @@ String[] genNotes()
     fin[i] = "C";
   }
   return fin;
+}
+
+String genChord(boolean tri7)
+{
+  String[] seventh = {"Diminished","Half-Dim","Minor","Minor-Major","Dominant","Major","Augmented","Augmented Maj"};
+  String[] triad = {"Major","Minor","Augmented","Diminished"};
+  if(tri7)
+  {
+    return seventh[constrain((int)map(chord,0,500,0,7),0,7)];
+  }
+  return triad[constrain((int)map(chord,0,500,0,3),0,3)];
 }
