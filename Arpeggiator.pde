@@ -195,11 +195,7 @@ int[] handData(int userId, int instrument)
   
   dats[1] = constrain((int)map(convLeftHand.y,0, 450, 32,150),32,150);
   
-//  if(convLeftHand.y <= height/2) // tri7
-//    dats[2] = -1;
-//  else
-//    dats[2] = 0;
-  dats[2] = 0;
+  dats[2] = tri7 ? 0 : -1;
     
   dats[3] = (int)(dist(convLeftHand.x, convLeftHand.y, convLeftHand.z, convRightHand.x, convRightHand.y, convRightHand.z)); //pattern
   dats[4] = instrument; //instrument
