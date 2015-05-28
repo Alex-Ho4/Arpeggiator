@@ -96,8 +96,10 @@ void draw()
   
   if(triToggle.display())
     tri7 = !tri7;
-  insUp.display();
-  insDown.display();  
+  if(insUp.display())
+    instrument++;
+  if(insDown.display())
+    instrument--;
   
   //PImage depth = kinect.depthImage();  
   
@@ -139,7 +141,7 @@ void draw()
     else
       text(notes[basePitch] + " " + genChord(tri7),10,50);
     text("BPM: " + tempo ,10,100);
-    text(instrument,10,150);
+    text("Instrument: " + instrument,10,150);
     
     for(int j : data)
     {
